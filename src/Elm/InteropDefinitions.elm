@@ -18,7 +18,7 @@ interop =
 
 
 type FromElm
-    = Alert String
+    = UpdateCount Int
 
 
 type ToElm
@@ -30,19 +30,19 @@ type alias User =
 
 
 type alias Flags =
-    {}
+    { count : Int }
 
 
 fromElm : Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAlert value ->
+        (\vUpdateCount value ->
             case value of
-                Alert string ->
-                    vAlert string
+                UpdateCount int ->
+                    vUpdateCount int
         )
-        |> TsEncode.variantTagged "alert"
-            (TsEncode.object [ required "message" identity TsEncode.string ])
+        |> TsEncode.variantTagged "updateCount"
+            (TsEncode.object [ required "count" identity TsEncode.int ])
         |> TsEncode.buildUnion
 
 
@@ -60,4 +60,4 @@ toElm =
 
 flags : Decoder Flags
 flags =
-    TsDecode.null {}
+    TsDecode.map Flags (TsDecode.field "count" TsDecode.int)

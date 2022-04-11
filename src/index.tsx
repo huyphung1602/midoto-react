@@ -19,10 +19,10 @@ interface ComponentProps {
 }
 
 function ElmComponent({ count, setCount }: ComponentProps) {
-  const [app, setApp] = React.useState<Elm.Main.App | undefined>();
+  const [app, setApp] = React.useState<Elm.ElmApp | undefined>();
   const elmRef = React.useRef(null);
 
-  const elmApp = () => Elm.Main.init({ node: elmRef.current, flags: count });
+  const elmApp = () => Elm.Main.init({ node: elmRef.current, flags: { count: count }});
 
   React.useEffect(() => {
     setApp(elmApp());
@@ -31,8 +31,13 @@ function ElmComponent({ count, setCount }: ComponentProps) {
   // Subscribe to state changes from Elm
   React.useEffect(() => {
     app &&
-      app.ports.updateCountInReact.subscribe((newCount) => {
-        setCount(newCount);
+      app.ports.interopFromElm.subscribe((fromElm: { tag: String; data: { count: number; }; }) => {
+        switch (fromElm.tag) {
+          case "updateCount": {
+            setCount(fromElm.data.count);
+            break;
+          }
+        }
       });
   }, [app]);
 

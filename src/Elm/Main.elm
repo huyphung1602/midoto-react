@@ -1,15 +1,20 @@
-port module Main exposing (main)
+module Main exposing (main)
 
 import Browser
 import Html exposing (..)
 import Html.Events exposing (onClick)
+import InteropDefinitions
+import InteropPorts
 
-
-port updateCountInReact : Int -> Cmd msg
-
+-- port updateCountInReact : Int -> Cmd msg
+updateCountInReact : Int -> Cmd msg
+updateCountInReact count =
+    count
+        |> InteropDefinitions.UpdateCount
+        |> InteropPorts.fromElm
 
 type alias Flags =
-    Int
+    { count : Int }
 
 
 main : Program Flags Model Msg
@@ -24,7 +29,10 @@ main =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( flags, Cmd.none )
+    let
+        _ = Debug.log <| Debug.toString flags
+    in
+    ( flags.count, Cmd.none )
 
 
 type alias Model =
