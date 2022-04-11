@@ -3,26 +3,38 @@ import ReactDOM from "react-dom";
 import { Elm } from "./Elm/Main";
 
 export default function App() {
-  const [count, setCount] = React.useState(0);
+  const [todos, setTodos] = React.useState([]);
   return (
     <div>
-      <h1>Elm In React</h1>
-      <ReactComponent count={count} setCount={setCount} />
-      <ElmComponent count={count} setCount={setCount} />
+      <ReactComponent todos={todos} setTodos={setTodos} />
+      <ElmComponent todos={todos} setTodos={setTodos} />
     </div>
   );
 }
 
 interface ComponentProps {
-  count: number;
-  setCount: Function;
+  todos: ({
+    id: number;
+    } & {
+        name: string;
+    } & {
+        workedTime: number;
+    } & {
+        previousWorkedTime: number;
+    } & {
+        status: "active" | "incomplete" | "completed";
+    }) [];
+  setTodos: Function;
 }
 
-function ElmComponent({ count, setCount }: ComponentProps) {
+function ElmComponent({ todos, setTodos }: ComponentProps) {
   const [app, setApp] = React.useState<Elm.ElmApp | undefined>();
   const elmRef = React.useRef(null);
 
-  const elmApp = () => Elm.Main.init({ node: elmRef.current, flags: { count: count }});
+  const storedState = localStorage.getItem('todo-app-save');
+  const startingState = storedState ? storedState : "";
+  // console.log("Retrieved state: ", storedState);
+  const elmApp = () => Elm.Main.init({ node: elmRef.current, flags: { todos: startingState }});
 
   React.useEffect(() => {
     setApp(elmApp());
@@ -31,10 +43,12 @@ function ElmComponent({ count, setCount }: ComponentProps) {
   // Subscribe to state changes from Elm
   React.useEffect(() => {
     app &&
-      app.ports.interopFromElm.subscribe((fromElm: { tag: String; data: { count: number; }; }) => {
+      app.ports.interopFromElm.subscribe((fromElm: { tag: String; data: { todos: any; }; }) => {
         switch (fromElm.tag) {
-          case "updateCount": {
-            setCount(fromElm.data.count);
+          case "updateTodos": {
+            const todosJson = JSON.stringify(fromElm.data.todos);
+            localStorage.setItem('todo-app-save', todosJson);
+            setTodos(fromElm.data.todos);
             break;
           }
         }
@@ -44,11 +58,9 @@ function ElmComponent({ count, setCount }: ComponentProps) {
   return <div ref={elmRef}></div>;
 }
 
-function ReactComponent({ count }: ComponentProps) {
+function ReactComponent({ todos }: ComponentProps) {
   return (
     <div>
-      <h2>This is a React Component</h2>
-      <div>Count: {count}</div>
     </div>
   );
 }
