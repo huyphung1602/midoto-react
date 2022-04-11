@@ -12,11 +12,14 @@
   },
   "devDependencies": {
     "elm-hot": "^1.1.4",
+    "elm-ts-interop": "0.0.8",
     "node-elm-compiler": "^5.0.4",
+    "parcel": "^2.4.1",
     "parcel-bundler": "^1.12.4"
   },
   "scripts": {
-    "start": "parcel index.html",
-    "ts-interop": "npx elm-typescript-interop"
+    "start": "parcel public/index.html",
+    "build": "parcel build public/index.html -d build",
+    "ts-interop": "npx elm-ts-interop"
   }
 }
